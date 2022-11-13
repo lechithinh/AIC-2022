@@ -106,7 +106,7 @@ def get_colour_name(requested_colour):
 #map keyframe utils
 def reverse_to_csv(TESTDATA):
     submits = []
-    for sample in TESTDATA.split("\r\n"):
+    for sample in TESTDATA.split("\n"):
         submits.append(sample.split(','))
 
     df = pd.DataFrame(submits)
