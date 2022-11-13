@@ -8,12 +8,12 @@ const SideBar = () => {
   const [state, dispatch] = useStore();
 
   const [options, setOptions] = useState({
-    csvName: "query-1.csv",
+    csvName: "query-1",
     numberOfPredictions: 20,
     transcriptFilter: "",
     objectFilter: "",
     colorFilter: "",
-    imgPath: "/home/ngohiep/Documents/AI Challenge/KeyFrames",
+    imgPath: "/home/ngohiep/Documents/AI_Challenge/KeyFrames",
   });
 
   useEffect(() => {
@@ -21,7 +21,9 @@ const SideBar = () => {
   }, [options]);
 
   const handleChange = (e, type) => {
-    setOptions({ ...options, [type]: e.target.value });
+    let data = e.target.value;
+    if (type === "transcriptFilter") data = data.toLowerCase();
+    setOptions({ ...options, [type]: data });
   };
 
   return (

@@ -1,13 +1,18 @@
 import { Typography } from "@mui/material";
 import React from "react";
 import { Col, Row } from "react-bootstrap";
-
+import { Backdrop } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 import "./style.css";
 import QueryPanel from "./QueryPanel";
 import ImagePanel from "./ImagePanel";
 import CSVPanel from "./CSVPanel";
+import Previewer from "./Previewer";
+import { useStore } from "../../store";
 
 const MainSection = () => {
+  const [state, dispatch] = useStore();
+
   return (
     <Col lg={9} style={{ height: "fit-content" }}>
       <Typography variant="h2" my={4} textAlign="center">
@@ -27,10 +32,16 @@ const MainSection = () => {
           </Typography>
 
           <QueryPanel />
-
+          <Previewer />
           <ImagePanel />
         </Col>
       </Row>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={state.openBackDrop}
+      >
+        <CircularProgress color="inherit" disableShrink />
+      </Backdrop>
     </Col>
   );
 };

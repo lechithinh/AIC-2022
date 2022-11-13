@@ -4,6 +4,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import Fab from "@mui/material/Fab";
 import { actions, useStore } from "../../store";
 import { JoinImagePath } from "../../utils/joinImagePath";
+import { FetchResult } from "../../utils/FetchResult";
 
 const CSVPanel = () => {
   const [state, dispatch] = useStore();
@@ -25,7 +26,7 @@ const CSVPanel = () => {
     document.body.removeChild(element);
   };
 
-  const handleDownloadClick = () => {
+  const handleDownloadClick = async () => {
     const { csvName: filename } = state.dataSend;
     const { csv } = state.dataRcv;
 
@@ -37,7 +38,21 @@ const CSVPanel = () => {
       alert("csv rỗng sao tải về được :v");
       return;
     }
-    downLoadFile(csv, filename + ".csv");
+    try {
+      const payload = {
+        csv,
+      };
+      const res = await FetchResult(
+        "http://localhost:8000/map",
+        "post",
+        payload
+      );
+      // console.log(res.data);
+      downLoadFile(res.data.csv, filename + ".csv");
+    } catch (error) {
+      console.error(error);
+      alert(error);
+    }
   };
 
   const handleOnChange = (e) => {

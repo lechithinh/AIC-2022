@@ -2,6 +2,7 @@ import {
   HIDE_SPINNER,
   SET_RECEIVED_DATA,
   SET_SENT_DATA,
+  SHOW_PREVIEWER,
   SHOW_SPINNER,
 } from "./constants";
 
@@ -11,7 +12,14 @@ const initStates = {
     urls: [],
   },
   dataSend: {},
-  openBackDrop: 0,
+  openBackDrop: false,
+  previewerConfig: {
+    open: false,
+    title: "Preview Image",
+    src: "./error-image-generic.png",
+    videoLink: "",
+    folderPath: "",
+  },
 };
 
 function reducer(state, action) {
@@ -33,13 +41,19 @@ function reducer(state, action) {
     case SHOW_SPINNER:
       return {
         ...state,
-        openBackDrop: 1,
+        openBackDrop: true,
       };
 
     case HIDE_SPINNER:
       return {
         ...state,
-        openBackDrop: 0,
+        openBackDrop: false,
+      };
+
+    case SHOW_PREVIEWER:
+      return {
+        ...state,
+        previewerConfig: payload,
       };
 
     default:
