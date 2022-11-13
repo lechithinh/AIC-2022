@@ -2,7 +2,6 @@ import React from "react";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import { actions, useStore } from "../../store";
-import { FetchResult } from "../../utils/FetchResult";
 
 const ImagePanel = () => {
   const [state, dispatch] = useStore();

@@ -1,5 +1,5 @@
 import React from "react";
-import { Collapse, Dialog, DialogTitle, Fab } from "@mui/material";
+import {  Dialog, DialogTitle, Fab } from "@mui/material";
 import { Col, Image, Row } from "react-bootstrap";
 import { actions, useStore } from "../../store";
 import DriveFileMoveIcon from "@mui/icons-material/DriveFileMove";
@@ -23,7 +23,7 @@ const Previewer = () => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    const url = e.target.src;
+    // const url = e.target.src;
 
     // console.log(url);
     try {
