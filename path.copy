@@ -1,0 +1,13 @@
+#config paths
+IMAGE_KEYFRAME_PATH = r"C:\Users\thinhlc\Documents\KeyFrames"
+VISUAL_FEATURES_PATH = r"C:\Users\thinhlc\Documents\CLIPFeatures"
+KEYFRAME_P_PATH = r'C:\Users\thinhlc\Documents\Keyframe_P\keyframe_p'
+META_LINK = r'C:\Users\thinhlc\Documents\Metadata'
+
+#config files
+JSON_KEYFRAME_FILES = r'C:\Users\thinhlc\Documents\aic_api\keyframe_files.json'
+JSON_TRANSCIPRTS = r'C:\Users\thinhlc\Documents\aic_api\transcripts.json'
+JSON_OBJECTS = r'C:\Users\thinhlc\Documents\aic_api\objects.json'
+JSON_COLORS = r'C:\Users\thinhlc\Documents\aic_api\colors.json'
+JSON_REVERSED_OBJECTS = r'C:\Users\thinhlc\Documents\aic_api\reversed_objects.json'
+TEXT_CLASS = r'C:\Users\thinhlc\Documents\aic_api\classes.txt'

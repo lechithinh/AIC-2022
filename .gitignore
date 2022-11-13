@@ -17,6 +17,8 @@
 /UI/npm-debug.log*
 /UI/yarn-debug.log*
 
+path.py
+
 classes.txt
 keyframe_files.json
 objects.json
