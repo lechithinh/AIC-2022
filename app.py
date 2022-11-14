@@ -106,7 +106,7 @@ async def show_image(path: str):
 
 @app.get("/explore/{_:path}")
 def open_folder(path: str = ""):
-    path = path[:-12] #chỗ này không cố định, cần kiểm tra xóa cái đuôi ảnh ra
+    path = path[:-11] #chỗ này không cố định, cần kiểm tra xóa cái đuôi ảnh ra
     print("path", path)
     try:
         os.startfile(path)
