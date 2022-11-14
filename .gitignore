@@ -18,7 +18,7 @@
 /UI/yarn-debug.log*
 
 path.py
-
+__pycache__
 classes.txt
 keyframe_files.json
 objects.json

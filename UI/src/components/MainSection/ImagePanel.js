@@ -9,9 +9,9 @@ const ImagePanel = () => {
   const handleClick = (e) => {
     const folderPath = e.target.src.split("/stream/").join("/explore/");
     const path = new URL(e.target.src).searchParams.get("path");
-    const keyframeLocation = path.split("/KeyFrames/")[1]; // video name/keyframeid.jpg
+    const keyframeLocation = path.split("KeyFrames")[1]; // /<video name>/<keyframeid>.jpg
     const videoLink = new URL("http://localhost:8000/ytb/{_}");
-    videoLink.searchParams.append("path", keyframeLocation);
+    videoLink.searchParams.append("path", keyframeLocation.substring(1));
     dispatch(
       actions.setPreviewer({
         open: true,
