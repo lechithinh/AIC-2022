@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Row, Image, Col } from "react-bootstrap";
 import { Typography, Tab, Tabs, Box, Button, TextField } from "@mui/material";
 import PropTypes from "prop-types";
@@ -40,7 +40,59 @@ const QueryPanel = () => {
   const [state, dispatch] = useStore();
   const [tabInx, setTabInx] = useState(0);
   const [imageQuery, setimageQuery] = useState(null);
+  const [submissionDetails, setSubmissionDetails] = useState({
+    vidName: "",
+    frameId: "",
+    timecode: "",
+  });
+  const [toggleTextBox, setToggleTextBox] = useState({
+    timecode: true,
+    frame: true,
+  });
   const [textQuery, setTextQuery] = useState("");
+  const [sessionId, setSessionId] = useState("");
+
+  useEffect(() => {
+    if (submissionDetails.timecode === "" && submissionDetails.frameId === "") {
+      setToggleTextBox({
+        timecode: true,
+        frame: true,
+      });
+      return;
+    }
+    if (submissionDetails.timecode !== "") {
+      setToggleTextBox({
+        timecode: true,
+        frame: false,
+      });
+      return;
+    }
+    if (submissionDetails.frameId !== "") {
+      setToggleTextBox({
+        timecode: false,
+        frame: true,
+      });
+      return;
+    }
+  }, [submissionDetails]);
+
+  useEffect(() => {
+    //get sessionId to submit query
+
+    FetchResult("https://eventretrieval.one/api/v1/login", "post", {
+      username: "grizzly05",
+      password: "ba2Doacohc",
+    })
+      .then((response) => {
+        const { data } = response;
+        setSessionId(data.sessionId);
+        console.log(data);
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Error when getting sessionId: " + error);
+      });
+  }, []);
 
   const changeTab = (event, newValue) => {
     setTabInx(newValue);
@@ -56,7 +108,7 @@ const QueryPanel = () => {
     setTextQuery(e.target.value);
   };
 
-  const handleSubmit = async (type) => {
+  const handleQueryClick = async (type) => {
     dispatch(
       actions.setRcvData({
         csv: [],
@@ -167,12 +219,41 @@ const QueryPanel = () => {
     }
   };
 
+  const handleSubmitResult = async (e) => {
+    e.preventDefault();
+    const params = {
+      item: submissionDetails.vidName,
+      session: sessionId,
+    };
+    if (submissionDetails.frameId !== "")
+      params.frame = submissionDetails.frameId;
+    if (submissionDetails.timecode !== "")
+      params.timecode = submissionDetails.timecode;
+
+    const url = new URL("https://eventretrieval.one/api/v1/submit");
+    for (let key in params) {
+      url.searchParams.append(key, params[key]);
+    }
+    try {
+      const submitResult = await FetchResult(url, "get");
+      const { data } = submitResult;
+      alert(data.submission + ": " + data.description);
+    } catch (error) {
+      console.log(error.response);
+      if (error.response.data.description) {
+        alert(error.response.data.description);
+      }
+    }
+  };
+
   return (
     <Row className="bg-secondary bg-opacity-10 rounded">
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs value={tabInx} onChange={changeTab}>
           <Tab label="Text search" {...a11yProps(0)} />
           <Tab label="Image search" {...a11yProps(1)} />
+          <Tab label="Sketch search" {...a11yProps(2)} />
+          <Tab label="Submission" {...a11yProps(3)} />
         </Tabs>
       </Box>
 
@@ -191,7 +272,7 @@ const QueryPanel = () => {
         />
         <Button
           variant="contained"
-          onClick={() => handleSubmit("text")}
+          onClick={() => handleQueryClick("text")}
           size="medium"
           className="my-3"
           color="error"
@@ -222,7 +303,7 @@ const QueryPanel = () => {
               size="medium"
               className="my-3 mx-3"
               color="error"
-              onClick={() => handleSubmit("image")}
+              onClick={() => handleQueryClick("image")}
             >
               Query
             </Button>
@@ -233,6 +314,69 @@ const QueryPanel = () => {
             )}
           </Col>
         </Row>
+      </TabPanel>
+
+      <TabPanel index={2} value={tabInx}>
+        <Typography variant="h6" gutterBottom>
+          Query by sketch image
+        </Typography>
+      </TabPanel>
+
+      <TabPanel index={3} value={tabInx}>
+        <Typography variant="h6" gutterBottom>
+          Submission
+        </Typography>
+        <Typography variant="body2" gutterBottom>
+          {<b>sessionId:</b>} {sessionId}
+        </Typography>
+
+        <form onSubmit={handleSubmitResult}>
+          <TextField
+            label="Video name"
+            variant="outlined"
+            className="w-100 mt-2"
+            value={submissionDetails.vidName}
+            onChange={(val) =>
+              setSubmissionDetails({
+                ...submissionDetails,
+                vidName: val.target.value,
+              })
+            }
+            required
+            type="text"
+          />
+          <TextField
+            label="Frame"
+            variant="outlined"
+            className="w-100 mt-3"
+            value={submissionDetails.frameId}
+            disabled={!toggleTextBox.frame}
+            onChange={(val) =>
+              setSubmissionDetails({
+                ...submissionDetails,
+                frameId: val.target.value,
+              })
+            }
+            type="text"
+          />
+          <TextField
+            type="text"
+            className="w-100 mt-3"
+            variant="outlined"
+            label="Timecode"
+            value={submissionDetails.timecode}
+            disabled={!toggleTextBox.timecode}
+            onChange={(val) =>
+              setSubmissionDetails({
+                ...submissionDetails,
+                timecode: val.target.value,
+              })
+            }
+          />
+          <Button type="submit" className="my-3">
+            Submit
+          </Button>
+        </form>
       </TabPanel>
     </Row>
   );
