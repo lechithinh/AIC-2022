@@ -3,9 +3,10 @@ import { Row, Image, Col } from "react-bootstrap";
 import { Typography, Tab, Tabs, Box, Button, TextField } from "@mui/material";
 import PropTypes from "prop-types";
 import { useState } from "react";
-import { FetchResult } from "../../utils/FetchResult";
-import { actions, useStore } from "../../store";
-import { JoinImagePath } from "../../utils/joinImagePath";
+import { FetchResult } from "../../../utils/FetchResult";
+import { actions, useStore } from "../../../store";
+import { JoinImagePath } from "../../../utils/joinImagePath";
+import { SketchPanel } from "./Sketch";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -108,7 +109,7 @@ const QueryPanel = () => {
     setTextQuery(e.target.value);
   };
 
-  const handleQueryClick = async (type) => {
+  const handleQueryClick = async (type, sketch = null) => {
     dispatch(
       actions.setRcvData({
         csv: [],
@@ -116,27 +117,23 @@ const QueryPanel = () => {
       })
     );
 
+    const { colorFilter, numberOfPredictions, objectFilter, transcriptFilter } =
+      state.dataSend;
+
+    const params = {
+      text_query: textQuery,
+      topk: numberOfPredictions,
+      object_filter: objectFilter,
+      voice_filter: transcriptFilter,
+      color_filter: colorFilter,
+    };
+
     if (type === "text") {
       if (textQuery === "") {
         alert("Ẩu rồi đó! Nhập câu query đi ba!");
         return;
       }
       dispatch(actions.showSpinner());
-
-      const {
-        colorFilter,
-        numberOfPredictions,
-        objectFilter,
-        transcriptFilter,
-      } = state.dataSend;
-
-      const params = {
-        text_query: textQuery,
-        topk: numberOfPredictions,
-        object_filter: objectFilter,
-        voice_filter: transcriptFilter,
-        color_filter: colorFilter,
-      };
 
       try {
         const res = await FetchResult(
@@ -163,7 +160,10 @@ const QueryPanel = () => {
         console.error(error);
         dispatch(actions.hideSpinner());
       }
+      return;
     }
+
+    const formData = new FormData();
 
     if (type === "image") {
       if (imageQuery === null) {
@@ -171,51 +171,43 @@ const QueryPanel = () => {
         alert("Chọn hình đi ba");
         return;
       }
-      dispatch(actions.showSpinner());
 
       const e = document.getElementById("img-input");
 
-      const {
-        colorFilter,
-        numberOfPredictions,
-        objectFilter,
-        transcriptFilter,
-      } = state.dataSend;
-      const params = {
-        topk: numberOfPredictions,
-        object_filter: objectFilter,
-        voice_filter: transcriptFilter,
-        color_filter: colorFilter,
-      };
-      const formData = new FormData();
       formData.append("file", e.files[0]);
-      console.log(e.files);
-      try {
-        const res = await FetchResult(
-          "http://localhost:8000/image?" +
-            new URLSearchParams(params).toString(),
-          "post",
-          formData
-        );
+    }
 
-        const urls = res.data.paths.map((l) => {
-          const baseUrl = "http://127.0.0.1:8000/stream/{_}";
-          const imgPath = l;
-          return JoinImagePath(baseUrl, imgPath);
-        });
+    if (type === "sketch") {
+      formData.append("file", sketch);
+    }
 
-        dispatch(
-          actions.setRcvData({
-            csv: res.data.csv,
-            urls: urls,
-          })
-        );
-        dispatch(actions.hideSpinner());
-      } catch (error) {
-        alert(error);
-        console.error(error);
-        dispatch(actions.hideSpinner());
-      }
+    try {
+      dispatch(actions.showSpinner());
+      const route = type === "image" ? "image" : "drawing";
+      const res = await FetchResult(
+        `http://localhost:8000/${route}?` +
+          new URLSearchParams(params).toString(),
+        "post",
+        formData
+      );
+
+      const urls = res.data.paths.map((l) => {
+        const baseUrl = "http://127.0.0.1:8000/stream/{_}";
+        const imgPath = l;
+        return JoinImagePath(baseUrl, imgPath);
+      });
+
+      dispatch(
+        actions.setRcvData({
+          csv: res.data.csv,
+          urls: urls,
+        })
+      );
+      dispatch(actions.hideSpinner());
+    } catch (error) {
+      alert(error);
+      console.error(error);
+      dispatch(actions.hideSpinner());
     }
   };
 
@@ -243,6 +235,30 @@ const QueryPanel = () => {
       if (error.response.data.description) {
         alert(error.response.data.description);
       }
+    }
+  };
+
+  const handleMapResult = async () => {
+    const { csv } = state.dataRcv;
+    const top1 = csv.split("\n")[0];
+    try {
+      const payload = {
+        csv: top1 + "\n",
+      };
+      const res = await FetchResult(
+        "http://localhost:8000/map",
+        "post",
+        payload
+      );
+      // console.log(res.data.csv);
+      const [videoName, frameId] = res.data.csv.split(",");
+      setSubmissionDetails({
+        vidName: videoName,
+        frameId,
+        timecode: "",
+      });
+    } catch (error) {
+      alert(error);
     }
   };
 
@@ -317,9 +333,19 @@ const QueryPanel = () => {
       </TabPanel>
 
       <TabPanel index={2} value={tabInx}>
-        <Typography variant="h6" gutterBottom>
-          Query by sketch image
-        </Typography>
+        <Row>
+          <Col lg={8}>
+            <Typography variant="h6" gutterBottom>
+              Query by sketch image
+            </Typography>
+          </Col>
+          <Col lg={4}>
+            <Typography variant="h6" gutterBottom>
+              Options
+            </Typography>
+          </Col>
+        </Row>
+        <SketchPanel onQuery={handleQueryClick} />
       </TabPanel>
 
       <TabPanel index={3} value={tabInx}>
@@ -373,7 +399,10 @@ const QueryPanel = () => {
               })
             }
           />
-          <Button type="submit" className="my-3">
+          <Button color="primary" onClick={handleMapResult}>
+            Map result
+          </Button>
+          <Button type="submit" color="error" className="my-3">
             Submit
           </Button>
         </form>

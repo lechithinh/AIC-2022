@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Col } from "react-bootstrap";
-import { TextField, Slider, Typography } from "@mui/material";
-
+import { TextField, Slider, Typography, Autocomplete } from "@mui/material";
 import { actions, useStore } from "../../store";
+import { objects } from "../../object";
 
 const SideBar = () => {
   const [state, dispatch] = useStore();
@@ -24,6 +24,13 @@ const SideBar = () => {
     let data = e.target.value;
     if (type === "transcriptFilter") data = data.toLowerCase();
     setOptions({ ...options, [type]: data });
+  };
+
+  const handleChangeObjectFilter = (e, value) => {
+    setOptions({
+      ...options,
+      objectFilter: value.join(","),
+    });
   };
 
   return (
@@ -78,12 +85,19 @@ const SideBar = () => {
         onChange={(e) => handleChange(e, "transcriptFilter")}
       />
 
-      <TextField
-        label="Object filter"
-        variant="standard"
-        className="w-100 mb-4"
-        value={options.objectFilter}
-        onChange={(e) => handleChange(e, "objectFilter")}
+      <Autocomplete
+        multiple
+        onChange={handleChangeObjectFilter}
+        options={objects}
+        getOptionLabel={(option) => option}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            variant="standard"
+            label="Objects filter"
+            placeholder="Object"
+          />
+        )}
       />
 
       <TextField
